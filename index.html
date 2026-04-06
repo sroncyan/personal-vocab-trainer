@@ -40,21 +40,16 @@
       flex-wrap: wrap;
     }
 
-    input, textarea, select, button {
+    input, select, button {
       font: inherit;
     }
 
-    input, textarea, select {
+    input, select {
       width: 100%;
       padding: 12px;
       border: 1px solid #d7dce5;
       border-radius: 10px;
       background: #fff;
-    }
-
-    textarea {
-      resize: vertical;
-      min-height: 80px;
     }
 
     button {
@@ -254,16 +249,6 @@
           </div>
         </div>
 
-        <div style="margin-top: 12px;">
-          <label for="exampleInput">例文（任意）</label>
-          <textarea id="exampleInput" placeholder="例: Please confirm your reservation."></textarea>
-        </div>
-
-        <div style="margin-top: 12px;">
-          <label for="sourceInput">出典・メモ（任意）</label>
-          <input id="sourceInput" type="text" placeholder="例: 金フレ / 模試 / Part 5" />
-        </div>
-
         <div style="margin-top: 14px;" class="row">
           <button id="addWordBtn">登録する</button>
           <button id="clearFormBtn" class="secondary">入力をクリア</button>
@@ -319,8 +304,6 @@
 
           <div class="answer-box" id="answerBox">
             <div><strong>答え:</strong> <span id="quizAnswer"></span></div>
-            <div id="quizExampleWrap" style="margin-top: 8px;"></div>
-            <div id="quizSourceWrap" class="small" style="margin-top: 8px;"></div>
           </div>
 
           <div class="row" style="margin-top: 16px;">

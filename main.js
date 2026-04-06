@@ -8,8 +8,6 @@ let currentQuizMode = null;
 const els = {
   wordInput: document.getElementById("wordInput"),
   meaningInput: document.getElementById("meaningInput"),
-  exampleInput: document.getElementById("exampleInput"),
-  sourceInput: document.getElementById("sourceInput"),
   addWordBtn: document.getElementById("addWordBtn"),
   clearFormBtn: document.getElementById("clearFormBtn"),
   totalCount: document.getElementById("totalCount"),
@@ -25,8 +23,6 @@ const els = {
   quizHint: document.getElementById("quizHint"),
   answerBox: document.getElementById("answerBox"),
   quizAnswer: document.getElementById("quizAnswer"),
-  quizExampleWrap: document.getElementById("quizExampleWrap"),
-  quizSourceWrap: document.getElementById("quizSourceWrap"),
   showAnswerBtn: document.getElementById("showAnswerBtn"),
   reviewButtons: document.getElementById("reviewButtons"),
   knowBtn: document.getElementById("knowBtn"),
@@ -86,13 +82,11 @@ function incrementTodayReviewCount() {
   localStorage.setItem(TODAY_KEY, JSON.stringify(stats));
 }
 
-function createWordData(word, meaning, example, source) {
+function createWordData(word, meaning) {
   return {
     id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()),
     word: word.trim(),
     meaning: meaning.trim(),
-    example: example.trim(),
-    source: source.trim(),
     createdAt: new Date().toISOString(),
     reviewCount: 0,
     correctCount: 0,
@@ -108,8 +102,6 @@ function createWordData(word, meaning, example, source) {
 function addWord() {
   const word = els.wordInput.value.trim();
   const meaning = els.meaningInput.value.trim();
-  const example = els.exampleInput.value.trim();
-  const source = els.sourceInput.value.trim();
 
   if (!word || !meaning) {
     alert("英単語と意味は必須です。");
@@ -125,7 +117,7 @@ function addWord() {
     return;
   }
 
-  const newWord = createWordData(word, meaning, example, source);
+  const newWord = createWordData(word, meaning);
   words.unshift(newWord);
   saveWords();
   clearForm();
@@ -136,8 +128,6 @@ function addWord() {
 function clearForm() {
   els.wordInput.value = "";
   els.meaningInput.value = "";
-  els.exampleInput.value = "";
-  els.sourceInput.value = "";
   els.wordInput.focus();
 }
 
@@ -208,14 +198,6 @@ function startQuiz() {
     els.quizHint.textContent = "英単語を思い出してください。";
     els.quizAnswer.textContent = currentQuizWord.word;
   }
-
-  els.quizExampleWrap.innerHTML = currentQuizWord.example
-    ? `<strong>例文:</strong> ${escapeHtml(currentQuizWord.example)}`
-    : "";
-
-  els.quizSourceWrap.innerHTML = currentQuizWord.source
-    ? `出典・メモ: ${escapeHtml(currentQuizWord.source)}`
-    : "";
 
   els.showAnswerBtn.disabled = false;
 }
@@ -294,9 +276,7 @@ function renderWordList() {
   if (q) {
     filtered = filtered.filter(w =>
       w.word.toLowerCase().includes(q) ||
-      w.meaning.toLowerCase().includes(q) ||
-      (w.example || "").toLowerCase().includes(q) ||
-      (w.source || "").toLowerCase().includes(q)
+      w.meaning.toLowerCase().includes(q)
     );
   }
 
@@ -332,10 +312,6 @@ function renderWordList() {
             <button class="danger" onclick="deleteWord('${word.id}')">削除</button>
           </div>
         </div>
-
-        ${word.example ? `<p><strong>例文:</strong> ${escapeHtml(word.example)}</p>` : ""}
-        ${word.source ? `<p class="small">出典・メモ: ${escapeHtml(word.source)}</p>` : ""}
-
         <p class="small">
           回答回数: ${word.reviewCount} /
           正解扱い: ${word.correctCount} /
@@ -422,7 +398,7 @@ document.querySelectorAll(".tab-btn").forEach(btn => {
   });
 });
 
-[els.wordInput, els.meaningInput, els.exampleInput, els.sourceInput].forEach(el => {
+[els.wordInput, els.meaningInput].forEach(el => {
   el.addEventListener("keydown", e => {
     if (e.key === "Enter" && !e.shiftKey && el.tagName !== "TEXTAREA") {
       e.preventDefault();
