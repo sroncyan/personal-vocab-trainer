@@ -1,0 +1,802 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TOEIC 自分専用単語帳</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      background: #f5f7fb;
+      color: #222;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    h1, h2 {
+      margin-top: 0;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 18px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    input, textarea, select, button {
+      font: inherit;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #d7dce5;
+      border-radius: 10px;
+      background: #fff;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    button {
+      border: none;
+      border-radius: 10px;
+      padding: 12px 16px;
+      cursor: pointer;
+      background: #1f6feb;
+      color: white;
+      font-weight: 700;
+    }
+
+    button.secondary {
+      background: #e7eefc;
+      color: #1f4fbf;
+    }
+
+    button.gray {
+      background: #eef1f6;
+      color: #333;
+    }
+
+    button.danger {
+      background: #e55353;
+    }
+
+    button.success {
+      background: #2ea043;
+    }
+
+    button.warning {
+      background: #d97706;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    .stat {
+      background: #f8fafc;
+      border-radius: 12px;
+      padding: 14px;
+      text-align: center;
+    }
+
+    .stat .num {
+      font-size: 24px;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+
+    .muted {
+      color: #666;
+      font-size: 14px;
+    }
+
+    .quiz-word {
+      font-size: 34px;
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+
+    .quiz-sub {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 14px;
+    }
+
+    .answer-box {
+      background: #f8fafc;
+      border-radius: 12px;
+      padding: 14px;
+      margin: 14px 0;
+      display: none;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      background: #eef1f6;
+      color: #555;
+      margin-right: 6px;
+    }
+
+    .word-item {
+      border: 1px solid #e6eaf0;
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 10px;
+      background: #fff;
+    }
+
+    .word-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .word-title {
+      font-size: 20px;
+      font-weight: 800;
+    }
+
+    .small {
+      font-size: 13px;
+      color: #666;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .section-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .empty {
+      padding: 20px;
+      text-align: center;
+      color: #666;
+      background: #f8fafc;
+      border-radius: 12px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .tabs button.active {
+      background: #1f6feb;
+      color: white;
+    }
+
+    .footer-note {
+      color: #666;
+      font-size: 13px;
+      margin-top: 10px;
+    }
+
+    @media (max-width: 700px) {
+      .grid-2,
+      .stats {
+        grid-template-columns: 1fr;
+      }
+
+      .quiz-word {
+        font-size: 28px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>TOEIC 自分専用単語帳</h1>
+    <p class="muted">分からなかった単語をその場で登録して、苦手だけを効率よく復習できます。</p>
+
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="home">ホーム</button>
+      <button class="tab-btn gray" data-tab="quiz">クイズ</button>
+      <button class="tab-btn gray" data-tab="list">単語一覧</button>
+    </div>
+
+    <section id="tab-home">
+      <div class="card">
+        <div class="section-title">
+          <h2>クイック登録</h2>
+          <span class="muted">最小限の入力でOK</span>
+        </div>
+
+        <div class="grid-2">
+          <div>
+            <label for="wordInput">英単語</label>
+            <input id="wordInput" type="text" placeholder="例: confirm" />
+          </div>
+          <div>
+            <label for="meaningInput">意味</label>
+            <input id="meaningInput" type="text" placeholder="例: 確認する" />
+          </div>
+        </div>
+
+        <div style="margin-top: 12px;">
+          <label for="exampleInput">例文（任意）</label>
+          <textarea id="exampleInput" placeholder="例: Please confirm your reservation."></textarea>
+        </div>
+
+        <div style="margin-top: 12px;">
+          <label for="sourceInput">出典・メモ（任意）</label>
+          <input id="sourceInput" type="text" placeholder="例: 金フレ / 模試 / Part 5" />
+        </div>
+
+        <div style="margin-top: 14px;" class="row">
+          <button id="addWordBtn">登録する</button>
+          <button id="clearFormBtn" class="secondary">入力をクリア</button>
+        </div>
+
+        <div class="footer-note">
+          Enterキーでも登録できます。
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-title">
+          <h2>今日の状況</h2>
+          <button id="startQuizBtn" class="success">今日の5問を始める</button>
+        </div>
+
+        <div class="stats">
+          <div class="stat">
+            <div class="num" id="totalCount">0</div>
+            <div class="muted">総登録数</div>
+          </div>
+          <div class="stat">
+            <div class="num" id="activeCount">0</div>
+            <div class="muted">復習対象</div>
+          </div>
+          <div class="stat">
+            <div class="num" id="archivedCount">0</div>
+            <div class="muted">卒業済み</div>
+          </div>
+          <div class="stat">
+            <div class="num" id="todayReviewCount">0</div>
+            <div class="muted">今日の回答数</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="tab-quiz" class="hidden">
+      <div class="card">
+        <div class="section-title">
+          <h2>クイズ</h2>
+          <button id="refreshQuizBtn" class="secondary">別の問題にする</button>
+        </div>
+
+        <div id="quizEmpty" class="empty">
+          まだ単語がありません。まずはホームから単語を登録してください。
+        </div>
+
+        <div id="quizArea" class="hidden">
+          <div class="quiz-sub" id="quizModeLabel"></div>
+          <div class="quiz-word" id="quizQuestion"></div>
+          <div class="small" id="quizHint"></div>
+
+          <div class="answer-box" id="answerBox">
+            <div><strong>答え:</strong> <span id="quizAnswer"></span></div>
+            <div id="quizExampleWrap" style="margin-top: 8px;"></div>
+            <div id="quizSourceWrap" class="small" style="margin-top: 8px;"></div>
+          </div>
+
+          <div class="row" style="margin-top: 16px;">
+            <button id="showAnswerBtn">答えを見る</button>
+          </div>
+
+          <div id="reviewButtons" class="row hidden" style="margin-top: 16px;">
+            <button id="knowBtn" class="success">覚えた</button>
+            <button id="maybeBtn" class="warning">あやしい</button>
+            <button id="dontKnowBtn" class="danger">覚えてない</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="tab-list" class="hidden">
+      <div class="card">
+        <div class="section-title">
+          <h2>単語一覧</h2>
+          <div class="row">
+            <input id="searchInput" type="text" placeholder="検索" style="width: 220px;" />
+            <select id="filterSelect" style="width: 180px;">
+              <option value="all">すべて</option>
+              <option value="active">復習対象のみ</option>
+              <option value="archived">卒業済みのみ</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="wordList"></div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const STORAGE_KEY = "toeic_personal_vocab_app_v1";
+    const TODAY_KEY = "toeic_personal_vocab_today_stats_v1";
+
+    let words = loadWords();
+    let currentQuizWord = null;
+    let currentQuizMode = null;
+
+    const els = {
+      wordInput: document.getElementById("wordInput"),
+      meaningInput: document.getElementById("meaningInput"),
+      exampleInput: document.getElementById("exampleInput"),
+      sourceInput: document.getElementById("sourceInput"),
+      addWordBtn: document.getElementById("addWordBtn"),
+      clearFormBtn: document.getElementById("clearFormBtn"),
+      totalCount: document.getElementById("totalCount"),
+      activeCount: document.getElementById("activeCount"),
+      archivedCount: document.getElementById("archivedCount"),
+      todayReviewCount: document.getElementById("todayReviewCount"),
+      startQuizBtn: document.getElementById("startQuizBtn"),
+      refreshQuizBtn: document.getElementById("refreshQuizBtn"),
+      quizEmpty: document.getElementById("quizEmpty"),
+      quizArea: document.getElementById("quizArea"),
+      quizModeLabel: document.getElementById("quizModeLabel"),
+      quizQuestion: document.getElementById("quizQuestion"),
+      quizHint: document.getElementById("quizHint"),
+      answerBox: document.getElementById("answerBox"),
+      quizAnswer: document.getElementById("quizAnswer"),
+      quizExampleWrap: document.getElementById("quizExampleWrap"),
+      quizSourceWrap: document.getElementById("quizSourceWrap"),
+      showAnswerBtn: document.getElementById("showAnswerBtn"),
+      reviewButtons: document.getElementById("reviewButtons"),
+      knowBtn: document.getElementById("knowBtn"),
+      maybeBtn: document.getElementById("maybeBtn"),
+      dontKnowBtn: document.getElementById("dontKnowBtn"),
+      wordList: document.getElementById("wordList"),
+      searchInput: document.getElementById("searchInput"),
+      filterSelect: document.getElementById("filterSelect")
+    };
+
+    function loadWords() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (!saved) return [];
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveWords() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(words));
+    }
+
+    function getTodayString() {
+      return new Date().toISOString().slice(0, 10);
+    }
+
+    function getTodayStats() {
+      const saved = localStorage.getItem(TODAY_KEY);
+      const today = getTodayString();
+
+      if (!saved) {
+        const initial = { date: today, reviewCount: 0 };
+        localStorage.setItem(TODAY_KEY, JSON.stringify(initial));
+        return initial;
+      }
+
+      try {
+        const data = JSON.parse(saved);
+        if (data.date !== today) {
+          const reset = { date: today, reviewCount: 0 };
+          localStorage.setItem(TODAY_KEY, JSON.stringify(reset));
+          return reset;
+        }
+        return data;
+      } catch (e) {
+        const initial = { date: today, reviewCount: 0 };
+        localStorage.setItem(TODAY_KEY, JSON.stringify(initial));
+        return initial;
+      }
+    }
+
+    function incrementTodayReviewCount() {
+      const stats = getTodayStats();
+      stats.reviewCount += 1;
+      localStorage.setItem(TODAY_KEY, JSON.stringify(stats));
+    }
+
+    function createWordData(word, meaning, example, source) {
+      return {
+        id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()),
+        word: word.trim(),
+        meaning: meaning.trim(),
+        example: example.trim(),
+        source: source.trim(),
+        createdAt: new Date().toISOString(),
+        reviewCount: 0,
+        correctCount: 0,
+        wrongCount: 0,
+        streak: 0,
+        level: 0,
+        archived: false,
+        lastReviewedAt: null,
+        nextReviewAt: new Date().toISOString()
+      };
+    }
+
+    function addWord() {
+      const word = els.wordInput.value.trim();
+      const meaning = els.meaningInput.value.trim();
+      const example = els.exampleInput.value.trim();
+      const source = els.sourceInput.value.trim();
+
+      if (!word || !meaning) {
+        alert("英単語と意味は必須です。");
+        return;
+      }
+
+      const exists = words.find(
+        item => item.word.toLowerCase() === word.toLowerCase() && !item.archived
+      );
+
+      if (exists) {
+        alert("同じ単語がすでに登録されています。");
+        return;
+      }
+
+      const newWord = createWordData(word, meaning, example, source);
+      words.unshift(newWord);
+      saveWords();
+      clearForm();
+      renderAll();
+      switchTab("list");
+    }
+
+    function clearForm() {
+      els.wordInput.value = "";
+      els.meaningInput.value = "";
+      els.exampleInput.value = "";
+      els.sourceInput.value = "";
+      els.wordInput.focus();
+    }
+
+    function renderStats() {
+      const total = words.length;
+      const active = words.filter(w => !w.archived).length;
+      const archived = words.filter(w => w.archived).length;
+      const todayStats = getTodayStats();
+
+      els.totalCount.textContent = total;
+      els.activeCount.textContent = active;
+      els.archivedCount.textContent = archived;
+      els.todayReviewCount.textContent = todayStats.reviewCount;
+    }
+
+    function getDueWords() {
+      const now = new Date();
+      const activeWords = words.filter(w => !w.archived);
+
+      const due = activeWords.filter(w => {
+        if (!w.nextReviewAt) return true;
+        return new Date(w.nextReviewAt) <= now;
+      });
+
+      return due.length > 0 ? due : activeWords;
+    }
+
+    function pickQuizWord() {
+      const candidates = getDueWords();
+      if (candidates.length === 0) return null;
+
+      // 苦手な単語ほど出やすくする
+      const weighted = [];
+      candidates.forEach(word => {
+        const weight = Math.max(1, 6 - word.level + word.wrongCount - word.correctCount);
+        for (let i = 0; i < weight; i++) {
+          weighted.push(word);
+        }
+      });
+
+      const picked = weighted[Math.floor(Math.random() * weighted.length)];
+      return picked;
+    }
+
+    function startQuiz() {
+      currentQuizWord = pickQuizWord();
+
+      if (!currentQuizWord) {
+        els.quizEmpty.classList.remove("hidden");
+        els.quizArea.classList.add("hidden");
+        return;
+      }
+
+      els.quizEmpty.classList.add("hidden");
+      els.quizArea.classList.remove("hidden");
+      els.answerBox.style.display = "none";
+      els.reviewButtons.classList.add("hidden");
+
+      currentQuizMode = Math.random() < 0.5 ? "enToJa" : "jaToEn";
+
+      if (currentQuizMode === "enToJa") {
+        els.quizModeLabel.textContent = "英語 → 日本語";
+        els.quizQuestion.textContent = currentQuizWord.word;
+        els.quizHint.textContent = "意味を思い出してください。";
+        els.quizAnswer.textContent = currentQuizWord.meaning;
+      } else {
+        els.quizModeLabel.textContent = "日本語 → 英語";
+        els.quizQuestion.textContent = currentQuizWord.meaning;
+        els.quizHint.textContent = "英単語を思い出してください。";
+        els.quizAnswer.textContent = currentQuizWord.word;
+      }
+
+      els.quizExampleWrap.innerHTML = currentQuizWord.example
+        ? `<strong>例文:</strong> ${escapeHtml(currentQuizWord.example)}`
+        : "";
+
+      els.quizSourceWrap.innerHTML = currentQuizWord.source
+        ? `出典・メモ: ${escapeHtml(currentQuizWord.source)}`
+        : "";
+
+      els.showAnswerBtn.disabled = false;
+    }
+
+    function showAnswer() {
+      els.answerBox.style.display = "block";
+      els.reviewButtons.classList.remove("hidden");
+      els.showAnswerBtn.disabled = true;
+    }
+
+    function reviewCurrent(result) {
+      if (!currentQuizWord) return;
+
+      const target = words.find(w => w.id === currentQuizWord.id);
+      if (!target) return;
+
+      target.reviewCount += 1;
+      target.lastReviewedAt = new Date().toISOString();
+
+      if (result === "know") {
+        target.correctCount += 1;
+        target.streak += 1;
+        target.level = Math.min(target.level + 1, 5);
+      } else if (result === "maybe") {
+        target.streak = 0;
+      } else if (result === "dontKnow") {
+        target.wrongCount += 1;
+        target.streak = 0;
+        target.level = Math.max(target.level - 1, 0);
+      }
+
+      target.nextReviewAt = calcNextReviewAt(target, result);
+
+      if (target.level >= 5 && target.correctCount >= 3) {
+        target.archived = true;
+      }
+
+      incrementTodayReviewCount();
+      saveWords();
+      renderAll();
+      startQuiz();
+    }
+
+    function calcNextReviewAt(word, result) {
+      const now = new Date();
+
+      let minutesToAdd = 10;
+
+      if (result === "dontKnow") {
+        minutesToAdd = 5;
+      } else if (result === "maybe") {
+        minutesToAdd = 30;
+      } else {
+        if (word.level <= 1) minutesToAdd = 60;
+        else if (word.level === 2) minutesToAdd = 24 * 60;
+        else if (word.level === 3) minutesToAdd = 3 * 24 * 60;
+        else if (word.level >= 4) minutesToAdd = 7 * 24 * 60;
+      }
+
+      now.setMinutes(now.getMinutes() + minutesToAdd);
+      return now.toISOString();
+    }
+
+    function renderWordList() {
+      const q = els.searchInput.value.trim().toLowerCase();
+      const filter = els.filterSelect.value;
+
+      let filtered = [...words];
+
+      if (filter === "active") {
+        filtered = filtered.filter(w => !w.archived);
+      } else if (filter === "archived") {
+        filtered = filtered.filter(w => w.archived);
+      }
+
+      if (q) {
+        filtered = filtered.filter(w =>
+          w.word.toLowerCase().includes(q) ||
+          w.meaning.toLowerCase().includes(q) ||
+          (w.example || "").toLowerCase().includes(q) ||
+          (w.source || "").toLowerCase().includes(q)
+        );
+      }
+
+      filtered.sort((a, b) => {
+        if (a.archived !== b.archived) return a.archived - b.archived;
+        if (a.level !== b.level) return a.level - b.level;
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      });
+
+      if (filtered.length === 0) {
+        els.wordList.innerHTML = `<div class="empty">該当する単語がありません。</div>`;
+        return;
+      }
+
+      els.wordList.innerHTML = filtered.map(word => {
+        return `
+          <div class="word-item">
+            <div class="word-head">
+              <div>
+                <div class="word-title">${escapeHtml(word.word)}</div>
+                <div style="margin-top: 6px;">
+                  <span class="pill">意味: ${escapeHtml(word.meaning)}</span>
+                  <span class="pill">Lv ${word.level}</span>
+                  <span class="pill">${word.archived ? "卒業済み" : "復習対象"}</span>
+                </div>
+              </div>
+
+              <div class="row">
+                ${word.archived
+                  ? `<button class="gray" onclick="restoreWord('${word.id}')">復帰</button>`
+                  : `<button class="secondary" onclick="archiveWord('${word.id}')">卒業にする</button>`
+                }
+                <button class="danger" onclick="deleteWord('${word.id}')">削除</button>
+              </div>
+            </div>
+
+            ${word.example ? `<p><strong>例文:</strong> ${escapeHtml(word.example)}</p>` : ""}
+            ${word.source ? `<p class="small">出典・メモ: ${escapeHtml(word.source)}</p>` : ""}
+
+            <p class="small">
+              回答回数: ${word.reviewCount} /
+              正解扱い: ${word.correctCount} /
+              不正解扱い: ${word.wrongCount}
+            </p>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function archiveWord(id) {
+      const target = words.find(w => w.id === id);
+      if (!target) return;
+      target.archived = true;
+      saveWords();
+      renderAll();
+    }
+
+    function restoreWord(id) {
+      const target = words.find(w => w.id === id);
+      if (!target) return;
+      target.archived = false;
+      target.nextReviewAt = new Date().toISOString();
+      saveWords();
+      renderAll();
+    }
+
+    function deleteWord(id) {
+      const ok = confirm("この単語を削除しますか？");
+      if (!ok) return;
+      words = words.filter(w => w.id !== id);
+      saveWords();
+      renderAll();
+    }
+
+    function switchTab(tabName) {
+      document.querySelectorAll("section[id^='tab-']").forEach(sec => {
+        sec.classList.add("hidden");
+      });
+      document.getElementById(`tab-${tabName}`).classList.remove("hidden");
+
+      document.querySelectorAll(".tab-btn").forEach(btn => {
+        btn.classList.remove("active");
+        btn.classList.add("gray");
+      });
+
+      const activeBtn = document.querySelector(`.tab-btn[data-tab="${tabName}"]`);
+      activeBtn.classList.add("active");
+      activeBtn.classList.remove("gray");
+
+      if (tabName === "quiz") {
+        startQuiz();
+      }
+    }
+
+    function renderAll() {
+      renderStats();
+      renderWordList();
+    }
+
+    function escapeHtml(str) {
+      return str
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    // イベント
+    els.addWordBtn.addEventListener("click", addWord);
+    els.clearFormBtn.addEventListener("click", clearForm);
+    els.startQuizBtn.addEventListener("click", () => switchTab("quiz"));
+    els.refreshQuizBtn.addEventListener("click", startQuiz);
+    els.showAnswerBtn.addEventListener("click", showAnswer);
+    els.knowBtn.addEventListener("click", () => reviewCurrent("know"));
+    els.maybeBtn.addEventListener("click", () => reviewCurrent("maybe"));
+    els.dontKnowBtn.addEventListener("click", () => reviewCurrent("dontKnow"));
+    els.searchInput.addEventListener("input", renderWordList);
+    els.filterSelect.addEventListener("change", renderWordList);
+
+    document.querySelectorAll(".tab-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        switchTab(btn.dataset.tab);
+      });
+    });
+
+    [els.wordInput, els.meaningInput, els.exampleInput, els.sourceInput].forEach(el => {
+      el.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && !e.shiftKey && el.tagName !== "TEXTAREA") {
+          e.preventDefault();
+          addWord();
+        }
+      });
+    });
+
+    // グローバルに公開（inline onclick用）
+    window.archiveWord = archiveWord;
+    window.restoreWord = restoreWord;
+    window.deleteWord = deleteWord;
+
+    renderAll();
+  </script>
+</body>
+</html>
